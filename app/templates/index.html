@@ -18,51 +18,124 @@
       margin-bottom: 40px;
       font-size: 17px;
     }
-    .webcam_area {
+    .select_upload_type {
       margin-bottom: 50px;
     }
-    .webcam_area > div > div {
-      border: 1px solid #000;
+    .webcam_area > div.col-md-12 {
+      margin-bottom: 50px;
     }
-    .webcam_result img {
-      width: 500px;
-    }
-    .img-default {
+    .webcam_result {
       height: 350px;
       overflow: hidden;
     }
-    .button_area {
-
+    .webcam_result img {
+      width: 100%;
+    }
+    .direct_upload_form {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 40px;
+      margin-bottom: 40px;
+    }
+    .direct_upload_container > div > div {
+      height: 300px;
+      overflow: hidden;
+    }
+    .direct_upload_result > img {
+      width: 100%;
+    }
+    .image_test_result {
+      margin-top: 40px;
+    }
+    .h_v_center {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
     }
   </style>
 {% endblock stylesheets %}
 
 {% block main %}
-  <div class="main">
-    <div class="content">
+  <div class="main" style="display:none">
+    <div class="container">
       <div class="row">
         <div class="col-md-12 text-center">
           <div class="messages"></div>
         </div>
       </div>
-      <div class="row webcam_area">
-        <div class="col-md-6">
-          <div class="webcam_display"></div>
+      <div class="row select_upload_type text-center">
+        <h3>Please Select Upload Type</h3>
+
+        <div class="col-md-12 text-center">
+          <form>
+            <button type="button" class="btn btn-primary dct_btn">Direct Upload</button>
+            <button type="button" class="btn btn-danger wcm_btn">Webcam Upload</button>
+          </form>
         </div>
-        <div class="col-md-6">
-          <div class="webcam_result">
-            <div class="img-default">
-              <img src="{% fullstatic 'images/default-thumbnail.jpg' %}" />
+      </div>
+      <div class="row direct_upload_area">
+        <div class="text-center direct_upload_form_panel">
+          <h3>Select File to Upload</h3>
+          <form class="direct_upload_form text-center" method="post" action="{% fullurl 'media_upload' %}" enctype="multipart/form-data">
+            {% csrf_token %}
+            <input type="file" name="location" required>
+            <button type="submit" class="btn btn-primary">Upload</button>
+          </form>
+        </div>
+
+        <div class="direct_upload_container">
+          <div class="row">
+            <div class="col-md-4 col-md-offset-2 h_v_center">
+              <div class="direct_upload_result">
+                <!-- Uploaded img will appear here -->
+              </div>
+            </div>
+
+            <div class="col-md-4 text-center">
+              <form class="image_test_form text-center" method="post" action="{% fullurl 'ml_test' %}" enctype="multipart/form-data">
+                <input type="hidden" name="location">
+
+                <div class="row">
+                  <button type="button" class="btn btn-primary" name="type" value="CNN">Test CNN</button>
+                </div>
+                <div class="row">
+            		  <button type="button" class="btn btn-danger" name="type" value="MLP">Test MLP</button>
+                </div>
+              </form>
+
+              <div class="image_test_result">
+                <h4>Result: </h4>
+                <div class="text">
+
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </div>
-      <div class="row button_area">
-        <div class="col-md-12 text-center">
-          <form>
-        		<input type="button" class="btn btn-primary" value="Configure" onClick="webcam.configure()">
-        		<input type="button" class="btn btn-danger" value="Take" onClick="take_snapshot()">
-        	</form>
+      <div class="row webcam_area">
+        <div class="col-md-12">
+          <div class="col-md-6">
+            <div class="webcam_display"></div>
+          </div>
+          <div class="col-md-6">
+            <div class="webcam_result">
+              <div class="img-default">
+                <img src="{% fullstatic 'images/default-thumbnail.jpg' %}" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="button_area">
+          <div class="col-md-12 text-center">
+            <form>
+          		<input type="button" class="btn btn-primary" value="Configure" onClick="webcam.configure()">
+          		<input type="button" class="btn btn-danger" value="Take" onClick="take_snapshot()">
+          	</form>
+          </div>
         </div>
       </div>
     </div>
@@ -71,6 +144,79 @@
 
 {% block javascripts %}
   <script type="text/javascript">
+    $(document).ready(function() {
+      $('.main').show();
+
+      var webcam_area = $('.webcam_area');
+      var select_upload_type = $('.select_upload_type');
+      var direct_upload_area = $('.direct_upload_area');
+      var direct_upload_result = $('.direct_upload_result');
+      var direct_upload_container = $('.direct_upload_container');
+      var direct_upload_form_panel = $('.direct_upload_form_panel');
+      var image_test_result = $('.image_test_result');
+      var dct_btn = $('.dct_btn');
+      var wcm_btn = $('.wcm_btn');
+
+      webcam_area.hide();
+      direct_upload_area.hide();
+      direct_upload_container.hide();
+      image_test_result.hide();
+
+      dct_btn.click(function() {
+        webcam_area.hide();
+        select_upload_type.hide();
+        direct_upload_area.show(100);
+      });
+
+      wcm_btn.click(function() {
+        direct_upload_area.hide();
+        select_upload_type.hide();
+        webcam_area.show(100);
+      });
+
+      $('.direct_upload_form').submit(function(e) {
+        e.preventDefault();
+
+        var form = $(this);
+        var location = form.find('input[name=location]')[0];
+
+        if (location.files && location.files[0]) {
+          var data = new FormData();
+          data.append('location', location.files[0]);
+
+          axios.post(form.attr('action'), data).then(({data}) => {
+            direct_upload_form_panel.hide();
+            direct_upload_container.show();
+            direct_upload_result.html(
+              `<img src="${data}">`
+            );
+            $('.image_test_form')
+              .find('input[name=location]')
+              .val(data.replace (/^[a-z]{4}\:\/{2}[a-z]{1,}\:[0-9]{1,4}.(.*)/, '$1'));
+          }).catch(error => {
+            console.log(error);
+          });
+        }
+      });
+
+      $('.image_test_form button').click(function(e) {
+        image_test_result.hide();
+        var form = $(this).closest('form');
+        var data = new FormData();
+
+        data.append('location', form.find('input[name=location]').val());
+        data.append('type', $(this).val());
+
+        axios.post(form.attr('action'), data).then(({data}) => {
+          image_test_result.show(100);
+          image_test_result.find('.text')
+            .html(data);
+        }).catch(error => {
+          console.log(error);
+        });
+      });
+    });
+
     function take_snapshot() {
       $('.messages').html('<h3>Uploading...</h3>');
       webcam.snap();

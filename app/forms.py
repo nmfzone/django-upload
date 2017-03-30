@@ -3,5 +3,10 @@
 from __future__ import unicode_literals
 
 from django import forms
+from app.models import File
 
-# Create your forms here
+
+class FileForm(forms.ModelForm):
+    class Meta:
+        model = File
+        fields = ('location', )

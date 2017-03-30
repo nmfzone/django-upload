@@ -3,3 +3,14 @@
 
 // Font awesome
 @import "node_modules/font-awesome/scss/font-awesome";
+
+.row-centered {
+  text-align: center;
+}
+
+.col-centered {
+  display: inline-block;
+  float: none;
+  text-align: left;
+  margin-right: -4px;
+}
