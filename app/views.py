@@ -14,6 +14,7 @@ from django.core.files.base import ContentFile
 from django.views.generic.base import TemplateView
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
+from app.cnn import CNNTest
 
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -28,6 +29,8 @@ class MachineLearningView(View):
                     result = 'MLP Nice!'
 
                 elif request.POST.get('type') == 'CNN':
+                    cnnTest = CNNTest()
+                    cnnTest.run(media)
                     print('Do CNN test!')
                     result = 'CNN Nice!'
 

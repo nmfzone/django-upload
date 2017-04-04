@@ -134,3 +134,5 @@ STATICFILES_DIRS = (
 STATIC_ROOT = os.path.join(BASE_DIR, 'public/dist')
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'public/media')
+
+STORAGE_ROOT = os.path.join(BASE_DIR, 'storage')
