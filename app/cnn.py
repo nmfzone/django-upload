@@ -12,6 +12,8 @@ import _pickle as cPickle
 from math import sqrt
 
 from PIL import Image
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from django.conf import settings
 
@@ -102,11 +104,7 @@ class CNNTest:
         img = 255 - img
         img = img / 255.
 
-        print(img)
-
-        plt.imshow(img, cmap='Greys')
-        plt.show()
-
         img = img.reshape(1, 1, 28, 28)
         hasil = (predict(img)+1)
-        print(hasil)
+
+        return hasil

@@ -30,12 +30,7 @@ class MachineLearningView(View):
 
                 elif request.POST.get('type') == 'CNN':
                     cnnTest = CNNTest()
-                    cnnTest.run(media)
-                    print('Do CNN test!')
-                    result = 'CNN Nice!'
-
-                print(os.popen('file ' + media).read())
-                print(media)
+                    result = cnnTest.run(media)
 
                 return HttpResponse(result)
 
